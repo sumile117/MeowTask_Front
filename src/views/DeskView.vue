@@ -114,10 +114,10 @@ import axios from 'axios'
 import TaskItem from '../components/TaskItem.vue'
 
 const tasks = ref([
-  { id: 1, content: '完成智能计算系统大作业', date: '2025/05/06',coin:2, completed: false },
-  { id: 2, content: '慢跑30分钟', date: '2025/05/06',coin:2, completed: false },
-  { id: 3, content: '阅读30分钟', date: '2025/05/07',coin:2, completed: false },
-  { id: 4, content: '购买猫粮', date: '2025/05/08',coin:2, completed: false },
+  { id: 1, content: '完成智能计算系统大作业', date: '2025/05/06', coin: 2, completed: false },
+  { id: 2, content: '慢跑30分钟', date: '2025/05/06', coin: 2, completed: false },
+  { id: 3, content: '阅读30分钟', date: '2025/05/07', coin: 2, completed: false },
+  { id: 4, content: '购买猫粮', date: '2025/05/08', coin: 2, completed: false },
 ])
 const newTask = ref('')
 const newTaskTime = ref('')
