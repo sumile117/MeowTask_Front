@@ -74,7 +74,7 @@
           <div class="info-container">
             <div class="info-item">
               <img src="@/assets/coin.png" alt="coin" class="icon" />
-              <span class="info-label">30</span>
+              <span class="info-label">{{ selectedTask ? selectedTask.coin : '-' }}</span>
             </div>
             <div class="info-item">
               <img src="@/assets/time.png" alt="time" class="icon" />
@@ -114,10 +114,10 @@ import axios from 'axios'
 import TaskItem from '../components/TaskItem.vue'
 
 const tasks = ref([
-  { id: 1, content: '完成智能计算系统大作业', date: '2025/05/06', completed: false },
-  { id: 2, content: '慢跑30分钟', date: '2025/05/06', completed: false },
-  { id: 3, content: '阅读30分钟', date: '2025/05/07', completed: false },
-  { id: 4, content: '购买猫粮', date: '2025/05/08', completed: false },
+  { id: 1, content: '完成智能计算系统大作业', date: '2025/05/06',coin:2, completed: false },
+  { id: 2, content: '慢跑30分钟', date: '2025/05/06',coin:2, completed: false },
+  { id: 3, content: '阅读30分钟', date: '2025/05/07',coin:2, completed: false },
+  { id: 4, content: '购买猫粮', date: '2025/05/08',coin:2, completed: false },
 ])
 const newTask = ref('')
 const newTaskTime = ref('')
@@ -179,7 +179,7 @@ const addTask = () => {
       content: newTask.value.trim(),
       date: newTaskTime.value,
       // tag: newTaskTag.value,
-      // points: parseInt(newTaskPoints.value) || 2,
+      coin: parseInt(newTaskPoints.value) || 2,
       completed: false,
     })
     // 发送给后端
@@ -191,7 +191,7 @@ const addTask = () => {
             content: newTask.value.trim(),
             date: newTaskTime.value,
             // tag: newTaskTag.value,
-            // points: parseInt(newTaskPoints.value) || 2,
+            coin: parseInt(newTaskPoints.value) || 2,
             completed: false,
           },
         })
