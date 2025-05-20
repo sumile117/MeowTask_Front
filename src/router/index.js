@@ -13,6 +13,11 @@ const router = createRouter({
       name: 'desk',
       component: () => import('../views/DeskView.vue'),
     },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue'),
+    },
   ],
 })
 
