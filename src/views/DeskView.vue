@@ -1,5 +1,594 @@
 <template>
-  <div class="box">
+  <div class="desk">
+    <!-- 主内容区 -->
+    <div class="main-content" :class="{ 'expanded': showRightSection }">
+      <div class="header">
+        <h1>MeowTask</h1>
+        <div class="fish-bar">
+          <img v-for="i in 6" :key="i" src="@/assets/fish.jpg" alt="fish" />
+        </div>
+      </div>
+      <!-- 任务列表 -->
+      <div class="task-container">
+        <ul class="task-list">
+          <li v-for="task in tasks" :key="task.id" @click="selectTask(task)">
+            <img :src="taskIconSrc" alt="task-icon" class="button" @click.stop="completefrTask(task.id)" />
+            <div class="task-info">
+              <div class="task-row">
+                <h3>{{ task.name }}</h3>
+                <span class="task-date">{{ task.deadline }}</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <!-- <TaskItem
+            v-for="(task, index) in filteredTasks"
+            :key="task.id"
+            :task="task"
+            @click="selectTask(index)"
+            @complete="handleTaskComplete"
+          /> -->
+      </div>
+      <!-- 添加任务按钮 -->
+      <button class="add-button" @click="toggleRightSection">
+        <img :src="addSrc" alt="add-task" />
+      </button>
+    </div>
+    <!-- 右侧详情面板 -->
+    <div class="details-panel" :class="{ 'visible': showRightSection }">
+      <div class="panel-content">
+        <!-- 任务基本信息 -->
+        <div class="task-header">
+          <input 
+            v-model="taskName" 
+            class="task-name-input"
+            placeholder="输入任务名称"
+            @blur="updateTaskName"
+          />
+          <!-- <h2>{{ selectedTask?.name || '完成智能系统大作业' }}</h2>  这里要改成可以输入和- -->
+          <div class="metrics">
+            <span><img :src="coinSrc" alt="coin" /> <input v-model="taskCoin" /></span>
+            <span><img :src="timeSrc" alt="time" /> 4h30min</span>
+          </div>
+        </div>
+        <!-- 任务详情表单 -->
+        <!-- 任务详情表单 -->
+        <div class="task-form">
+          <div class="form-row">
+            <label>截止日期</label>
+            <input type="date" v-model="taskDeadline" />
+            <label class="tag-label">标签</label>
+            <select v-model="taskTag">
+              <option value="重要">重要</option>
+              <option value="紧急">紧急</option>
+              <option value="常规">常规</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- 聊天区域 -->
+        <div class="chat-container">
+          <div class="chat-messages">
+            <div 
+              v-for="(msg, index) in chatMessages" 
+              :key="index" 
+              :class="['chat-bubble', msg.from === 'AI' ? 'ai-message' : 'user-message']"
+            >
+              {{ msg.text }}
+            </div>
+          </div>
+          
+          <!-- AI猫图片 -->
+          <div class="ai-cat">
+            <img :src="aiCatSrc" alt="AI Cat" />
+          </div>
+          
+          <!-- 输入区域 -->
+          <div class="chat-input">
+            <input 
+              type="text" 
+              v-model="userInput" 
+              @keyup.enter="sendMessage" 
+              placeholder="和小猫聊聊天吧~" 
+            />
+            <button @click="sendMessage">发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+
+import { ref, reactive, watch,computed   } from 'vue';
+import { addTask, updateTask,completeTask } from '@/services/taskService.js'; 
+import TaskItem from '../components/TaskItem.vue'
+
+export default {
+  
+  setup() {
+    // 状态管理
+    const showRightSection = ref(false);
+    const selectedTask = ref(null);
+    const userInput = ref('');
+    const newtask = ref({
+        id: Date.now(), // 临时 ID，后端保存后可以替换
+        name: '',
+        coin: 2,
+        deadline: '',
+        tag: ''
+      });
+    // 聊天消息
+    const chatMessages = ref([
+      { text: "我正在设计一些材料，你什么时候需要？", from: 'AI' },
+      { text: "下个月？", from: 'User' },
+      { text: "我快完成了，请给我你的邮箱，完成后我会打包发给你。", from: 'AI' },
+      { text: "maciej.kowalski@email.com", from: 'User' }
+    ]);
+    
+    // 任务数据
+    const tasks = ref([
+      { id: 1, name: '完成智能计算系统大作业', deadline: '2025/05/06', tag: '重要',coin: '2' },
+      { id: 2, name: '慢跑30分钟', deadline: '2025/05/06' },
+      { id: 3, name: '准备英语考试', deadline: '2025/05/07' },
+      { id: 4, name: '阅读30页书籍', deadline: '2025/05/07' },
+      { id: 5, name: '整理笔记', deadline: '2025/05/08' }  //注意：deadline 格式为 '2025-05-08'
+    ]);
+    
+    // 资源路径
+    // 正确的写法
+    const fishSrc = new URL('@/assets/fish.jpg', import.meta.url).href;
+    const taskIconSrc = new URL('@/assets/xian.png', import.meta.url).href;
+    const addSrc = new URL('@/assets/add.png', import.meta.url).href;
+    const coinSrc = new URL('@/assets/coin.png', import.meta.url).href;
+    const timeSrc = new URL('@/assets/time.png', import.meta.url).href;
+    const aiCatSrc = new URL('@/assets/AIcat.png', import.meta.url).href; // 导入AI猫图片路径
+    
+    // 方法
+    const toggleRightSection = () => {
+      showRightSection.value = !showRightSection.value;
+      // 如果是关闭面板，重置选中任务
+      if (!showRightSection.value) {
+        if (!selectedTask.value) {
+          console.log(selectedTask.value)
+          console.log(taskName.value)
+          console.log(newtask.value)
+          tasks.value.push({...newtask.value});
+          addTask({...newtask.value});
+        }
+        else{
+          updateTask(selectedTask.value.id,{...selectedTask.value});
+        }
+      }
+      selectedTask.value = null;
+      taskName.value = '';
+      taskCoin.value = '';
+      taskDeadline.value = '';
+      taskTag.value = '';
+    };
+    const taskName = computed({
+      get() {
+        return selectedTask.value?.name || newtask.value.name;
+      },
+      set(value) {
+        if (selectedTask.value) {
+          selectedTask.value.name = value;
+        }
+        else{
+          newtask.value.name = value;
+        }
+      }
+    });  
+    const taskCoin = computed({
+      get() {
+        return selectedTask.value?.coin || newtask.value.coin;
+      },
+      set(value) {
+        if (selectedTask.value) {
+          selectedTask.value.coin = value;
+        }
+        else{
+          newtask.value.coin = value;
+        }
+      }
+    });
+    const taskDeadline = computed({
+      get() {
+        return selectedTask.value?.deadline || newtask.value.deadline;
+      },
+      set(value) {
+        if (selectedTask.value) {
+          selectedTask.value.deadline = value;
+        }
+        else{
+          newtask.value.deadline = value;
+        }
+      }
+    })  
+    const taskTag = computed({
+      get() {
+        return selectedTask.value?.tag || newtask.value.tag;
+      },
+      set(value) {
+        if (selectedTask.value) {
+          selectedTask.value.tag = value;
+        }
+        else{
+          newtask.value.tag = value;
+        }
+      }
+    })
+    //完成任务
+    const completefrTask = (taskid) => {
+      tasks.value = tasks.value.filter(task => task.id !== taskid);
+      completeTask(taskid)
+    }
+    const updateTaskName = () => {
+      // 这里可以做保存或校验逻辑，比如：
+      if (selectedTask.value) {
+        console.log('任务名已更新为：', selectedTask.value.name);
+      }
+      else{
+        console.log('新建任务：',taskName.value);
+      }
+    };
+    const selectTask = (task) => {
+      selectedTask.value = task;
+      showRightSection.value = true;
+    };
+    
+    const sendMessage = () => {
+      if (userInput.value.trim() === '') return;
+      
+      // 添加用户消息
+      chatMessages.value.push({ 
+        text: userInput.value, 
+        from: 'User' 
+      });
+      
+      // 清空输入
+      userInput.value = '';
+      
+      // 模拟AI回复（实际应调用API）
+      setTimeout(() => {
+        chatMessages.value.push({ 
+          text: "这是AI的回复：" + userInput.value.split('').reverse().join(''), 
+          from: 'AI' 
+        });
+      }, 800);
+    };
+    
+    return {
+      showRightSection,
+      selectedTask,
+      userInput,
+      chatMessages,
+      tasks,
+      fishSrc,
+      taskIconSrc,
+      addSrc,
+      coinSrc,
+      timeSrc,
+      aiCatSrc, // 导出AI猫图片路径
+      toggleRightSection,
+      selectTask,
+      sendMessage,
+      updateTaskName,  //右侧面板数据更新
+      // updateCoin,
+      // updateDeadline,
+      taskName,
+      taskCoin,
+      taskDeadline,
+      taskTag,
+      newtask,
+      completefrTask
+    };
+  }
+};
+</script>
+
+<style scoped>
+/* 基础布局 */
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 主内容区 */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease;
+  transform-origin: center center;
+  padding: 20px;
+  width: 100%;
+  max-width: 1600px;  /* 增加最大宽度从1200px到1600px */
+  margin: 0 auto;
+}
+
+.main-content.expanded {
+  transform: scale(0.8) translateX(-25%);
+}
+
+.header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.fish-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.fish-bar img {
+  width: 30px;
+  height: 30px;
+}
+
+.task-container {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;  /* 增加最大宽度从800px到1200px */
+  overflow-y: auto;
+  padding: 0 20px;  /* 添加左右内边距 */
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  width: 100%;  /* 确保列表占满容器宽度 */
+}
+
+.task-list li {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  margin-bottom: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  width: 800px;  /* 修改为固定宽度 */
+  min-height: 20px;
+  margin-left: auto;  /* 添加这行使其居中 */
+  margin-right: auto; /* 添加这行使其居中 */
+}
+
+.task-list li:hover {
+  transform: translateX(5px);
+}
+
+.task-list img {
+  width: 24px;
+  height: 24px;
+  margin-right: 15px;
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.task-row h3 {
+  margin: 0;
+  font-size: 16px;
+  flex: 1;
+}
+
+.task-date {
+  color: #888;
+  font-size: 14px;
+  margin-left: 15px;
+}
+
+.task-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.add-button {
+  position: fixed;
+  bottom: 30px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.add-button img {
+  width: 60px;
+  height: 60px;
+}
+
+/* 右侧详情面板 */
+.details-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background-color: #f0f0f0;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  padding: 60px;
+  overflow-y: auto;
+}
+
+.details-panel.visible {
+  transform: translateX(0);
+}
+
+.panel-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.task-name-input {
+  width: 100%;
+  font-size: 1.5rem;
+  text-align: center;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid #ddd;
+  padding: 5px;
+  margin-bottom: 10px;
+}
+
+.task-name-input:focus {
+  outline: none;
+  border-bottom-color: #007bff;
+}
+.metrics {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.metrics span {
+  display: flex;
+  align-items: center;
+}
+
+.metrics img {
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+}
+
+.task-form {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-row label {
+  white-space: nowrap;
+  font-weight: bold;
+}
+
+.tag-label {
+  margin-left: 20px;  /* 给标签标题添加左边距 */
+}
+
+.form-row input,
+.form-row select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex: 1;  /* 让输入框和下拉框平均分配剩余空间 */
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-bottom: 60px;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  max-height: calc(100% - 100px);
+  background-color: #E2E2E2;
+  /* max-width: 1600px;  /* 添加最大宽度限制 */
+  /* margin-left: auto;  /* 使聊天区域居中 */
+  /* margin-right: auto;   */
+}
+
+.chat-bubble {
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.user-message {
+  background-color: #f5f5f5;
+  color: #333;
+  margin-right: auto;  /* 修改：从 margin-left: auto 改为 margin-right: auto */
+  border-bottom-left-radius: 4px;  /* 修改：从 right 改为 left */
+}
+
+.ai-message {
+  background-color: #007bff;
+  color: white;
+  margin-left: auto;  /* 修改：从 margin-right: auto 改为 margin-left: auto */
+  border-bottom-right-radius: 4px;  /* 修改：从 left 改为 right */
+}
+
+.ai-cat {
+  text-align: center;
+  margin: 10px 0;
+  position: absolute;
+  bottom: -50px;  /* 修改：将猫咪移到底部 */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;  /* 添加：确保猫咪显示在最上层 */
+}
+
+.ai-cat img {
+  width: 300px;  /* 调整猫咪大小 */
+  height: auto;
+  border-radius: 8px;
+}
+
+.chat-input {
+  display: flex;
+  position: absolute;
+  bottom: 100px;  /* 修改：将输入框移到猫咪上方 */
+  left: 0;
+  right: 0;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-top: 1px solid #ddd;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+}
+
+.chat-input button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+</style><!-- <template> -->
+  <!-- <div class="box">
     <div class="desk">
       <button @click="toggleLeftColumn" class="toggle-button">+</button>
       <div v-if="leftColumnOpen" class="overlay" @click="toggleLeftColumn"></div>
@@ -479,4 +1068,4 @@ const toggleLeftColumn = () => {
   background-color: #eee;
   color: #333;
 }
-</style>
+</style> -->

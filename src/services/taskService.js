@@ -16,7 +16,9 @@ export const getTasks = () => {
 export const addTask = (task) => {
   return apiClient.post('/tasks', task)
 }
-
+export const updateTask = (taskId, task) => {
+  return apiClient.put(`/tasks/${taskId}`, task)
+}
 // 完成任务
 export const completeTask = (taskId) => {
   return apiClient.put(`/tasks/${taskId}/complete`)
