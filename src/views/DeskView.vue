@@ -21,18 +21,14 @@
             </div>
           </li>
         </ul>
-        <!-- <TaskItem
-            v-for="(task, index) in filteredTasks"
-            :key="task.id"
-            :task="task"
-            @click="selectTask(index)"
-            @complete="handleTaskComplete"
-          /> -->
+        <img src="@/assets/cat.jpg" alt="cat" class="cat-img" />
+        <h3>{{ catinteract }}</h3>
       </div>
       <!-- 添加任务按钮 -->
       <button class="add-button" @click="toggleRightSection">
         <img :src="addSrc" alt="add-task" />
       </button>
+      <h3>今天的总coin为{{ coinstoday }}</h3>
     </div>
     <!-- 右侧详情面板 -->
     <div class="details-panel" :class="{ 'visible': showRightSection }">
@@ -112,6 +108,7 @@ export default {
     const showRightSection = ref(false);
     const selectedTask = ref(null);
     const userInput = ref('');
+    const coinstoday=ref(0);
     const newtask = ref({
         id: Date.now(), // 临时 ID，后端保存后可以替换
         name: '',
@@ -120,6 +117,21 @@ export default {
         tag: ''
       });
     // 聊天消息
+    const catinteract = computed(()=>{
+      if (coinstoday.value<=4){
+        return "本喵肚子很饿了！{{用户名}}快去工作给我换小鱼干！";
+      }
+      else if (coinstoday.value<=8){
+        return "就几条小鱼可打发不了本喵，你就这点实力了喵？";
+      }
+      else if (coinstoday.value<=11){
+        return "已经不饿了喵，但是要是能再吃一条的话...就一条..";
+      }
+      else{
+        return "今天已经吃得很饱了喵！谢谢{{用户名}}的款待！";
+      }
+
+    });
     const chatMessages = ref([
       { text: "我正在设计一些材料，你什么时候需要？", from: 'AI' },
       { text: "下个月？", from: 'User' },
@@ -130,10 +142,10 @@ export default {
     // 任务数据
     const tasks = ref([
       { id: 1, name: '完成智能计算系统大作业', deadline: '2025/05/06', tag: '重要',coin: '2' },
-      { id: 2, name: '慢跑30分钟', deadline: '2025/05/06' },
-      { id: 3, name: '准备英语考试', deadline: '2025/05/07' },
-      { id: 4, name: '阅读30页书籍', deadline: '2025/05/07' },
-      { id: 5, name: '整理笔记', deadline: '2025/05/08' }  //注意：deadline 格式为 '2025-05-08'
+      { id: 2, name: '慢跑30分钟', deadline: '2025/05/06',coin: '2' },
+      { id: 3, name: '准备英语考试', deadline: '2025/05/07' ,coin: '2'},
+      { id: 4, name: '阅读30页书籍', deadline: '2025/05/07',coin: '2' },
+      { id: 5, name: '整理笔记', deadline: '2025/05/08',coin: '2' }  //注意：deadline 格式为 '2025-05-08'
     ]);
     
     // 资源路径
@@ -221,6 +233,7 @@ export default {
     })
     //完成任务
     const completefrTask = (taskid) => {
+      coinstoday.value += Number(tasks.value.find(task => task.id === taskid).coin)||0;
       tasks.value = tasks.value.filter(task => task.id !== taskid);
       completeTask(taskid)
     }
@@ -282,7 +295,9 @@ export default {
       taskDeadline,
       taskTag,
       newtask,
-      completefrTask
+      completefrTask,
+      coinstoday,
+      catinteract
     };
   }
 };
@@ -399,7 +414,17 @@ export default {
   font-size: 14px;
   color: #666;
 }
+.cat-container {
+  position: relative;
+  text-align: right;
+  margin-top: 30px;
+  padding-right: 80px;
+}
 
+.cat-img {
+  width: 180px;
+  border-radius: 4px;
+}
 .add-button {
   position: fixed;
   bottom: 30px;
