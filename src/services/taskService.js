@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: 'http://your-backend-url.com/api',
+  baseURL: 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,10 +16,11 @@ export const getTasks = () => {
 export const addTask = (task) => {
   return apiClient.post('/tasks', task)
 }
+//  更新任务
 export const updateTask = (taskId, task) => {
-  return apiClient.put(`/tasks/${taskId}`, task)
+  return apiClient.put(`/tasks/id/${taskId}`, task)
 }
 // 完成任务
 export const completeTask = (taskId) => {
-  return apiClient.put(`/tasks/${taskId}/complete`)
+  return apiClient.delete(`/tasks/id/${taskId}`)
 }
