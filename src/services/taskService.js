@@ -22,5 +22,5 @@ export const updateTask = (taskId, task) => {
 }
 // 完成任务
 export const completeTask = (taskId) => {
-  return apiClient.post(`/tasks/complete/${taskId}`)
+  return apiClient.delete(`/tasks/id/${taskId}`)
 }
