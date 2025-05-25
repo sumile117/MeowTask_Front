@@ -207,12 +207,12 @@ export default {
     })
     const taskDeadline = computed({
       get() {
-        let date =   new Date(selectedTask.value?.deadline || newtask.value.deadline)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        return `${year}-${month}-${day}`
-
+        // let date =   new Date(selectedTask.value?.deadline || newtask.value.deadline)
+        // const year = date.getFullYear()
+        // const month = String(date.getMonth() + 1).padStart(2, '0')
+        // const day = String(date.getDate()).padStart(2, '0')
+        // return `${year}-${month}-${day}`
+        return selectedTask.value?.deadline || newtask.value.deadline;
       },
       set(value) {
         if (selectedTask.value) {
