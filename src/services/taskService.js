@@ -18,7 +18,7 @@ export const addTask = (task) => {
 }
 //  更新任务
 export const updateTask = (taskId, task) => {
-  return apiClient.put(`/tasks/${taskId}`, task)
+  return apiClient.put(`/tasks/id/${taskId}`, task)
 }
 // 完成任务
 export const completeTask = (taskId) => {
