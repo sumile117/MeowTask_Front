@@ -109,33 +109,31 @@ import { getTasks } from '@/services/taskService'
 export default {
   setup() {
     // 状态管理
-    const showRightSection = ref(false);
-    const selectedTask = ref(null);
-    const userInput = ref('');
-    const coinstoday=ref(0);
+    const showRightSection = ref(false)
+    const selectedTask = ref(null)
+    const userInput = ref('')
+    const coinstoday = ref(0)
     const newtask = ref({
-        id: Date.now(), // 临时 ID，后端保存后可以替换
-        name: '',
-        coin: 2,
-        deadline: '',
-        tag: ''
-      });
+      id: Date.now(), // 临时 ID，后端保存后可以替换
+      name: '',
+      coin: 2,
+      deadline: '',
+      tag: '',
+    })
     // 聊天消息
-    const catinteract = computed(()=>{
-      if (coinstoday.value<=4){
-        return "本喵肚子很饿了！{{用户名}}快去工作给我换小鱼干！";
+    const catinteract = computed(() => {
+      if (coinstoday.value <= 4) {
+        // return "本喵肚子很饿了！{{用户名}}快去工作给我换小鱼干！";
+        return '本喵肚子很饿了！快去工作给我换小鱼干！'
+      } else if (coinstoday.value <= 8) {
+        return '就几条小鱼可打发不了本喵，你就这点实力了喵？'
+      } else if (coinstoday.value <= 11) {
+        return '已经不饿了喵，但是要是能再吃一条的话...就一条..'
+      } else {
+        // return "今天已经吃得很饱了喵！谢谢{{用户名}}的款待！";
+        return '今天已经吃得很饱了喵！谢谢的款待！'
       }
-      else if (coinstoday.value<=8){
-        return "就几条小鱼可打发不了本喵，你就这点实力了喵？";
-      }
-      else if (coinstoday.value<=11){
-        return "已经不饿了喵，但是要是能再吃一条的话...就一条..";
-      }
-      else{
-        return "今天已经吃得很饱了喵！谢谢{{用户名}}的款待！";
-      }
-
-    });
+    })
     const chatMessages = ref([
       { text: '我正在设计一些材料，你什么时候需要？', from: 'AI' },
       { text: '下个月？', from: 'User' },
@@ -224,7 +222,7 @@ export default {
         // const month = String(date.getMonth() + 1).padStart(2, '0')
         // const day = String(date.getDate()).padStart(2, '0')
         // return `${year}-${month}-${day}`
-        return selectedTask.value?.deadline || newtask.value.deadline;
+        return selectedTask.value?.deadline || newtask.value.deadline
       },
       set(value) {
         if (selectedTask.value) {
@@ -248,8 +246,8 @@ export default {
     })
     //完成任务
     const completefrTask = (taskid) => {
-      coinstoday.value += Number(tasks.value.find(task => task.id === taskid).coin)||0;
-      tasks.value = tasks.value.filter(task => task.id !== taskid);
+      coinstoday.value += Number(tasks.value.find((task) => task.id === taskid).coin) || 0
+      tasks.value = tasks.value.filter((task) => task.id !== taskid)
       completeTask(taskid)
     }
     const updateTaskName = () => {
@@ -311,10 +309,10 @@ export default {
       newtask,
       completefrTask,
       coinstoday,
-      catinteract
-    };
-  }
-};
+      catinteract,
+    }
+  },
+}
 </script>
 
 <style scoped>
