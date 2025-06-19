@@ -5,7 +5,7 @@
       <div class="header">
         <h1>MeowTask</h1>
         <div class="fish-bar">
-          <img v-for="i in 6" :key="i" src="@/assets/fish." alt="fish" />
+          <img v-for="i in 6" :key="i" src="@/assets/fish.jpg" alt="fish" />
         </div>
         <h3>今天的总coin为{{ coinstoday }}</h3>
       </div>
@@ -116,6 +116,7 @@ import { ref, reactive, watch, computed } from 'vue'
 import { addTask, updateTask, completeTask } from '@/services/taskService.js'
 import { onMounted } from 'vue'
 import { getTasks } from '@/services/taskService'
+import {userchat,aianswer} from '@/services/taskService.js'
 export default {
   setup() {
     // 状态管理
@@ -126,14 +127,14 @@ export default {
     const idCount = ref(0);
     const newtask = ref({
    // id: Date.now(), // 临时 ID，后端保存后可以替换
-        id:()=>{idCount.value+1;
-          return idCount.value;
-        },
-        name: '',
-        coin: 2,
-        deadline: '',
-        tag: ''
-      });
+    id:()=>{idCount.value+1;
+      return idCount.value;
+      },
+      name: '',
+      coin: 2,
+      deadline: '',
+      tag: ''
+      });
     // 聊天消息
     const catinteract = computed(() => {
       if (coinstoday.value <= 4) {
@@ -343,17 +344,23 @@ export default {
         text: userInput.value,
         from: 'User',
       })
-
+      userchat(userInput.value)
       // 清空输入
       userInput.value = ''
-
-      // 模拟AI回复（实际应调用API）
-      setTimeout(() => {
+      aianswer().then((response)=>{
         chatMessages.value.push({
-          text: '这是AI的回复：' + userInput.value.split('').reverse().join(''),
+          text: response.data,
           from: 'AI',
         })
-      }, 800)
+      })
+      // 模拟AI回复（实际应调用API）
+      // setTimeout(() => {
+      //   chatMessages.value.push({
+      //     text: '这是AI的回复：' + userInput.value.split('').reverse().join(''),
+      //     from: 'AI',
+      //   })
+      // }, 800)
+
     }
 
     return {
@@ -681,14 +688,14 @@ export default {
   word-wrap: break-word;
 }
 
-.user-message {
+.ai-message {
   background-color: #f5f5f5;
   color: #333;
   margin-right: auto;
   border-bottom-left-radius: 4px;
 }
 
-.ai-message {
+.user-message {
   background-color: #007bff;
   color: white;
   margin-left: auto;

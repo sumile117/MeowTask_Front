@@ -24,3 +24,11 @@ export const updateTask = (taskId, task) => {
 export const completeTask = (taskId) => {
   return apiClient.delete(`/tasks/id/${taskId}`)
 }
+
+export const userchat = (usermessage) => {
+  return apiClient.post(`/usermessage/${usermessage}`)
+}
+
+export const aianswer = (message) => {
+  return apiClient.get(`/aimessage}`)
+}
