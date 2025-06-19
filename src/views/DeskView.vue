@@ -1,7 +1,33 @@
 <template>
   <div class="desk">
+    <div v-if="showVideo" class="video-container">
+      <button 
+        class="skip-button" 
+        @click="skipIntro"
+        :disabled="!videoReady"
+      >
+        跳过 <i class="fa fa-forward"></i>
+      </button>
+      
+      <video
+        ref="introVideo"
+        @ended="handleVideoEnd"
+        @loadedmetadata="onVideoLoaded"
+        @error="onVideoError"
+        autoplay
+        muted
+        loop="false"
+        playsinline
+      >
+        <source :src="mp4Src" type="video/mp4">
+        您的浏览器不支持视频播放
+      </video>
+      
+      <div v-if="!videoReady" class="loading-indicator">加载视频中...</div>
+    </div>
+  
     <!-- 主内容区 -->
-    <div class="main-content" :class="{ expanded: showRightSection }">
+    <div v-else class="main-content" :class="{ expanded: showRightSection }">
       <div class="header">
         <h1>MeowTask</h1>
         <div class="fish-bar">
@@ -112,11 +138,13 @@
 </template>
 
 <script>
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch, computed,nextTick } from 'vue'
 import { addTask, updateTask, completeTask } from '@/services/taskService.js'
 import { onMounted } from 'vue'
 import { getTasks } from '@/services/taskService'
 import {userchat,aianswer} from '@/services/taskService.js'
+import introMp4 from '@/assets/intro.mp4'
+
 export default {
   setup() {
     // 状态管理
@@ -135,6 +163,58 @@ export default {
       deadline: '',
       tag: ''
       });
+    const introVideo = ref(null)
+    const showVideo = ref(true)
+    const videoReady = ref(false)
+    const mp4Src = ref(introMp4)
+    
+    onMounted(() => {
+      nextTick(() => {
+        if (introVideo.value) {
+          introVideo.value.src = mp4Src.value
+          
+          introVideo.value.addEventListener('loadedmetadata', () => {
+            console.log('视频元数据加载完成')
+            videoReady.value = true
+            introVideo.value.loop = false
+            introVideo.value.play().catch(err => {
+              console.log('自动播放失败:', err)
+              onVideoError()
+            })
+          })
+          
+          introVideo.value.addEventListener('ended', handleVideoEnd)
+          introVideo.value.addEventListener('error', (err) => {
+            console.log('视频加载错误:', err)
+            onVideoError()
+          })
+        }
+      })
+    })
+    
+    const skipIntro = () => {
+      console.log('用户点击跳过按钮')
+      handleVideoEnd()
+    }
+    
+    const handleVideoEnd = () => {
+      console.log('视频结束或被跳过，隐藏视频')
+      
+      if (introVideo.value) {
+        introVideo.value.pause()
+        introVideo.value.src = ''
+        introVideo.value.load()
+      }
+      
+      showVideo.value = false
+    }
+    
+    const onVideoError = () => {
+      console.log('视频加载错误，显示主内容')
+      showVideo.value = false
+    }
+    
+
     // 聊天消息
     const catinteract = computed(() => {
       if (coinstoday.value <= 4) {
@@ -387,6 +467,14 @@ export default {
       completefrTask,
       coinstoday,
       catinteract,
+      //视频返回
+      introVideo,
+      showVideo,
+      videoReady,
+      mp4Src,
+      skipIntro,
+      handleVideoEnd,
+      onVideoError
     }
   },
 }
@@ -767,4 +855,57 @@ export default {
 .task-container::-webkit-scrollbar-thumb:hover {
   background: #999;
 }
+
+/* 视频加载指示器样式 */
+.video-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.skip-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2100;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.skip-button:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #000;
+  transform: scale(1.05);
+}
+
+.skip-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 1.2rem;
+}
+
 </style>
