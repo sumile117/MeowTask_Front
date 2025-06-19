@@ -5,7 +5,7 @@
       <div class="header">
         <h1>MeowTask</h1>
         <div class="fish-bar">
-          <img v-for="i in 6" :key="i" src="@/assets/fish.jpg" alt="fish" />
+          <img v-for="i in 6" :key="i" src="@/assets/fish." alt="fish" />
         </div>
         <h3>今天的总coin为{{ coinstoday }}</h3>
       </div>
