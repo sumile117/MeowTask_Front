@@ -1,245 +1,203 @@
 <template>
-  <div class="screen-1">
-    <svg
-      class="logo"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
-      version="1.1"
-      width="300"
-      height="300"
-      viewbox="0 0 640 480"
-      xml:space="preserve"
-    >
-      <g transform="matrix(3.31 0 0 3.31 320.4 240.4)">
-        <circle
-          style="
-            stroke: rgb(0, 0, 0);
-            stroke-width: 0;
-            stroke-dasharray: none;
-            stroke-linecap: butt;
-            stroke-dashoffset: 0;
-            stroke-linejoin: miter;
-            stroke-miterlimit: 4;
-            fill: rgb(61, 71, 133);
-            fill-rule: nonzero;
-            opacity: 1;
-          "
-          cx="0"
-          cy="0"
-          r="40"
-        ></circle>
-      </g>
-      <g transform="matrix(0.98 0 0 0.98 268.7 213.7)">
-        <circle
-          style="
-            stroke: rgb(0, 0, 0);
-            stroke-width: 0;
-            stroke-dasharray: none;
-            stroke-linecap: butt;
-            stroke-dashoffset: 0;
-            stroke-linejoin: miter;
-            stroke-miterlimit: 4;
-            fill: rgb(255, 255, 255);
-            fill-rule: nonzero;
-            opacity: 1;
-          "
-          cx="0"
-          cy="0"
-          r="40"
-        ></circle>
-      </g>
-      <g transform="matrix(1.01 0 0 1.01 362.9 210.9)">
-        <circle
-          style="
-            stroke: rgb(0, 0, 0);
-            stroke-width: 0;
-            stroke-dasharray: none;
-            stroke-linecap: butt;
-            stroke-dashoffset: 0;
-            stroke-linejoin: miter;
-            stroke-miterlimit: 4;
-            fill: rgb(255, 255, 255);
-            fill-rule: nonzero;
-            opacity: 1;
-          "
-          cx="0"
-          cy="0"
-          r="40"
-        ></circle>
-      </g>
-      <g transform="matrix(0.92 0 0 0.92 318.5 286.5)">
-        <circle
-          style="
-            stroke: rgb(0, 0, 0);
-            stroke-width: 0;
-            stroke-dasharray: none;
-            stroke-linecap: butt;
-            stroke-dashoffset: 0;
-            stroke-linejoin: miter;
-            stroke-miterlimit: 4;
-            fill: rgb(255, 255, 255);
-            fill-rule: nonzero;
-            opacity: 1;
-          "
-          cx="0"
-          cy="0"
-          r="40"
-        ></circle>
-      </g>
-      <g transform="matrix(0.16 -0.12 0.49 0.66 290.57 243.57)">
-        <polygon
-          style="
-            stroke: rgb(0, 0, 0);
-            stroke-width: 0;
-            stroke-dasharray: none;
-            stroke-linecap: butt;
-            stroke-dashoffset: 0;
-            stroke-linejoin: miter;
-            stroke-miterlimit: 4;
-            fill: rgb(255, 255, 255);
-            fill-rule: nonzero;
-            opacity: 1;
-          "
-          points="-50,-50 -50,50 50,50 50,-50 "
-        ></polygon>
-      </g>
-      <g transform="matrix(0.16 0.1 -0.44 0.69 342.03 248.34)">
-        <polygon
-          style="
-            stroke: rgb(0, 0, 0);
-            stroke-width: 0;
-            stroke-dasharray: none;
-            stroke-linecap: butt;
-            stroke-dashoffset: 0;
-            stroke-linejoin: miter;
-            stroke-miterlimit: 4;
-            fill: rgb(255, 255, 255);
-            fill-rule: nonzero;
-            opacity: 1;
-          "
-          vector-effect="non-scaling-stroke"
-          points="-50,-50 -50,50 50,50 50,-50 "
-        ></polygon>
-      </g>
-    </svg>
-    <div class="email">
-      <label for="email">邮箱</label>
-      <div class="sec-2">
-        <ion-icon name="mail-outline"></ion-icon>
-        <input type="email" name="email" placeholder="输入邮箱" />
+  <div class="desk">
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 头部 -->
+      <div class="header">
+        <h1>MeowTask</h1>
+        <div class="fish-bar">
+          <img v-for="i in 6" :key="i" src="@/assets/fish.jpg" alt="fish" />
+        </div>
+        <h3>欢迎回来！请登录</h3>
       </div>
-    </div>
-    <div class="password">
-      <label for="password">密码</label>
-      <div class="sec-2">
-        <ion-icon name="lock-closed-outline"></ion-icon>
-        <input class="pas" type="password" name="password" placeholder="输入密码" />
-        <ion-icon class="show-hide" name="eye-outline"></ion-icon>
+
+      <!-- 登录表单区域 -->
+      <div class="task-container-wrapper">
+        <div class="task-container login-form">
+          <h2 style="text-align: center; margin-bottom: 1em;">登录</h2>
+          <div class="email">
+            <label for="email">邮箱</label>
+            <div class="sec-2">
+              <ion-icon name="mail-outline"></ion-icon>
+              <input type="email" v-model="email" name="email" placeholder="输入邮箱" />
+            </div>
+          </div>
+
+          <div class="password">
+            <label for="password">密码</label>
+            <div class="sec-2">
+              <ion-icon name="lock-closed-outline"></ion-icon>
+              <input class="pas" v-model="password" type="password" name="password" placeholder="输入密码" />
+              <ion-icon class="show-hide" name="eye-outline"></ion-icon>
+            </div>
+          </div>
+
+          <button class="login" @click="handleLogin">登录</button>
+
+          <div class="footer">
+            <span>注册</span>
+            <span>忘记密码?</span>
+          </div>
+        </div>
       </div>
-    </div>
-    <button class="login">登录</button>
-    <div class="footer">
-      <span>注册</span>
-      <span>忘记密码?</span>
+
+      <!-- 猫咪图片移到任务容器外部 -->
+      <div class="cat-container">
+        <img src="@/assets/cat.jpg" alt="cat" class="cat-img" />
+        <h3>喵~ 欢迎回来喵！</h3>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-</script>
-<style>
-* {
-  font-family: 'Poppins';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+export default {
+  setup() {
+    const email = ref('')
+    const password = ref('')
+    const router = useRouter()
+
+    const handleLogin = () => {
+      // 不做验证，直接跳转到主页
+      router.push('/desk')
+    }
+
+    return {
+      email,
+      password,
+      handleLogin
+    }
+  }
 }
-body {
-  user-select: none;
-  overflow-y: hidden;
+</script>
+
+<style scoped>
+/* 主内容区 */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+  z-index: 10;
+}
+
+.fish-bar {
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: #dde5f4;
-  height: 100vh;
+  gap: 10px;
+  margin-top: 10px;
+  position: relative;
 }
-.screen-1 {
-  background: #f1f7fe;
+
+.fish-bar img {
+  width: 30px;
+  height: 30px;
+  transition: all 0.3s ease;
+}
+
+.task-container-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin-top: -20px;
+  margin-bottom: 30px;
+}
+
+.task-container.login-form {
   padding: 2em;
-  display: flex;
-  flex-direction: column;
-  border-radius: 30px;
-  box-shadow: 0 0 2em #e6e9f9;
-  gap: 2em;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
 }
-.screen-1 .logo {
-  margin-top: -3em;
+
+.email,
+.password {
+  margin-bottom: 1em;
 }
-.screen-1 .email {
-  background: white;
-  box-shadow: 0 0 2em #e6e9f9;
-  padding: 1em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-  border-radius: 20px;
+
+.email label,
+.password label {
+  font-weight: bold;
   color: #4d4d4d;
-  margin-top: -3em;
 }
-.screen-1 .email input {
-  outline: none;
+
+.sec-2 {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 5px;
+}
+
+.sec-2 ion-icon {
+  color: #4d4d4d;
+  margin-right: 10px;
+}
+
+.email input,
+.password input {
+  flex: 1;
   border: none;
+  outline: none;
+  font-size: 1rem;
 }
-.screen-1 .email input::placeholder {
+
+.email input::placeholder,
+.password input::placeholder {
   color: black;
   font-size: 0.9em;
 }
-.screen-1 .email ion-icon {
-  color: #4d4d4d;
-  margin-bottom: -0.2em;
-}
-.screen-1 .password {
-  background: white;
-  box-shadow: 0 0 2em #e6e9f9;
-  padding: 1em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-  border-radius: 20px;
-  color: #4d4d4d;
-}
-.screen-1 .password input {
-  outline: none;
-  border: none;
-}
-.screen-1 .password input::placeholder {
-  color: black;
-  font-size: 0.9em;
-}
-.screen-1 .password ion-icon {
-  color: #4d4d4d;
-  margin-bottom: -0.2em;
-}
-.screen-1 .password .show-hide {
-  margin-right: -5em;
-}
-.screen-1 .login {
+
+.login {
+  width: 100%;
   padding: 1em;
   background: #3e4684;
   color: white;
   border: none;
   border-radius: 30px;
   font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
 }
-.screen-1 .footer {
+
+.footer {
+  margin-top: 1em;
   display: flex;
   justify-content: space-around;
-  font-size: 0.7em;
+  font-size: 0.9em;
   color: #5e5e5e;
-  gap: 14em;
-  padding-bottom: 10em;
 }
-.screen-1 .footer span {
+
+.footer span {
   cursor: pointer;
 }
-button {
-  cursor: pointer;
+
+.cat-container {
+  width: 100%;
+  max-width: 1200px;
+  text-align: left;
+  padding: 10px;
+  margin-top: 20px;
+}
+
+.cat-img {
+  width: 180px;
+  border-radius: 4px;
 }
 </style>

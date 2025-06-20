@@ -1,14 +1,14 @@
 <template>
   <div class="desk">
     <div v-if="showVideo" class="video-container">
-      <button 
-        class="skip-button" 
+      <button
+        class="skip-button"
         @click="skipIntro"
         :disabled="!videoReady"
       >
         跳过 <i class="fa fa-forward"></i>
       </button>
-      
+
       <video
         ref="introVideo"
         @ended="handleVideoEnd"
@@ -22,10 +22,10 @@
         <source :src="mp4Src" type="video/mp4">
         您的浏览器不支持视频播放
       </video>
-      
+
       <div v-if="!videoReady" class="loading-indicator">加载视频中...</div>
     </div>
-  
+
     <!-- 主内容区 -->
     <div v-else class="main-content" :class="{ expanded: showRightSection }">
       <div class="header">
@@ -35,7 +35,7 @@
         </div>
         <h3>今天的总coin为{{ coinstoday }}</h3>
       </div>
-      
+
       <!-- 固定大小的任务容器 - 关键修改 -->
       <div class="task-container-wrapper">
         <div class="task-container">
@@ -55,20 +55,20 @@
               </div>
             </li>
           </ul>
-          
+
           <!-- 无任务时显示提示 -->
           <div v-if="tasks.length === 0" class="empty-task-message">
             <p>暂无任务，点击下方"+"添加新任务</p>
           </div>
         </div>
       </div>
-      
+
       <!-- 猫咪图片移到任务容器外部 -->
       <div class="cat-container">
         <img src="@/assets/cat.jpg" alt="cat" class="cat-img" />
         <h3>{{ catinteract }}</h3>
       </div>
-      
+
       <!-- 添加任务按钮 -->
       <button class="add-button" :class="{ 'moved': showRightSection }" @click="toggleRightSection">
         <img :src="addSrc" alt="add-task" />
@@ -142,7 +142,7 @@ import { ref, reactive, watch, computed,nextTick } from 'vue'
 import { addTask, updateTask, completeTask } from '@/services/taskService.js'
 import { onMounted } from 'vue'
 import { getTasks } from '@/services/taskService'
-import {userchat,aianswer} from '@/services/taskService.js'
+import aiService  from '@/services/aiService' // 引入 AI 服务
 import introMp4 from '@/assets/intro.mp4'
 
 export default {
@@ -154,25 +154,26 @@ export default {
     const coinstoday=ref(0);
     const idCount = ref(0);
     const newtask = ref({
-   // id: Date.now(), // 临时 ID，后端保存后可以替换
-    id:()=>{idCount.value+1;
-      return idCount.value;
+      // id: Date.now(), // 临时 ID，后端保存后可以替换
+      id:()=>{idCount.value+1;
+        return idCount.value;
       },
       name: '',
       coin: 2,
       deadline: '',
       tag: ''
-      });
+    });
     const introVideo = ref(null)
     const showVideo = ref(true)
     const videoReady = ref(false)
     const mp4Src = ref(introMp4)
-    
+
     onMounted(() => {
+      window.dispatchEvent(new Event('resize'))
       nextTick(() => {
         if (introVideo.value) {
           introVideo.value.src = mp4Src.value
-          
+
           introVideo.value.addEventListener('loadedmetadata', () => {
             console.log('视频元数据加载完成')
             videoReady.value = true
@@ -182,7 +183,7 @@ export default {
               onVideoError()
             })
           })
-          
+
           introVideo.value.addEventListener('ended', handleVideoEnd)
           introVideo.value.addEventListener('error', (err) => {
             console.log('视频加载错误:', err)
@@ -191,29 +192,30 @@ export default {
         }
       })
     })
-    
+
+
     const skipIntro = () => {
       console.log('用户点击跳过按钮')
       handleVideoEnd()
     }
-    
+
     const handleVideoEnd = () => {
       console.log('视频结束或被跳过，隐藏视频')
-      
+
       if (introVideo.value) {
         introVideo.value.pause()
         introVideo.value.src = ''
         introVideo.value.load()
       }
-      
+
       showVideo.value = false
     }
-    
+
     const onVideoError = () => {
       console.log('视频加载错误，显示主内容')
       showVideo.value = false
     }
-    
+
 
     // 聊天消息
     const catinteract = computed(() => {
@@ -227,12 +229,8 @@ export default {
         return '今天已经吃得很饱了喵！谢谢的款待！'
       }
     })
-    const chatMessages = ref([
-      { text: '我正在设计一些材料，你什么时候需要？', from: 'AI' },
-      { text: '下个月？', from: 'User' },
-      { text: '我快完成了，请给我你的邮箱，完成后我会打包发给你。', from: 'AI' },
-      { text: 'maciej.kowalski@email.com', from: 'User' },
-    ])
+    //TODO 用户发送消息，获取AI的回复
+    const chatMessages = ref([])
 
     // 任务数据
     const tasks = ref([]) // 初始化为空数组
@@ -257,13 +255,32 @@ export default {
     // 方法
     const toggleRightSection = () => {
       showRightSection.value = !showRightSection.value
-      // 如果是关闭面板，重置选中任务
       if (!showRightSection.value) {
         if (!selectedTask.value) {
-          idCount.value += 1;
-          newtask.value.id = idCount.value;
+          idCount.value += 1
+          newtask.value.id = idCount.value
+
+          // 添加本地任务（保持原逻辑不变）
           tasks.value.push({ ...newtask.value })
-          addTask({ ...newtask.value })
+
+
+          // 新增：调用 createTaskWithAI 获取 AI 反馈
+          aiService.createTaskWithAI(newtask.value)
+            .then(response => {
+              // 提取 feedback 并添加到聊天记录
+              const feedback = response.feedback || `建议奖励${response.coin}个金币喵~`
+              chatMessages.value.push({
+                text: feedback,
+                from: 'AI'
+              })
+            })
+            .catch(err => {
+              console.error('获取 AI 反馈失败:', err)
+              chatMessages.value.push({
+                text: '喵~ 分析任务失败，默认给你2个金币喵~',
+                from: 'AI'
+              })
+            })
         } else {
           updateTask(selectedTask.value.id, { ...selectedTask.value })
         }
@@ -274,6 +291,8 @@ export default {
       taskDeadline.value = ''
       taskTag.value = ''
     }
+
+
     const taskName = computed({
       get() {
         return selectedTask.value?.name || newtask.value.name
@@ -327,77 +346,77 @@ export default {
       coinstoday.value += Number(tasks.value.find((task) => task.id === taskid).coin) || 0
       tasks.value = tasks.value.filter((task) => task.id !== taskid)
       completeTask(taskid)
-      
+
       // 触发小鱼下落动画
       triggerFishFalling()
     }
-    
+
     // 触发小鱼下落的辅助函数
     const triggerFishFalling = () => {
       const fishElements = document.querySelectorAll('.fish-bar img')
       const activeFish = Array.from(fishElements).find(fish => {
         return !fish.classList.contains('falling')
       })
-      
+
       if (activeFish) {
         // 获取小鱼在视口中的位置
         const fishRect = activeFish.getBoundingClientRect()
         const mainContent = document.querySelector('.main-content')
         const mainRect = mainContent.getBoundingClientRect()
-        
+
         // 创建小鱼克隆用于动画
         const fallingFish = activeFish.cloneNode(true)
         fallingFish.classList.add('falling')
         fallingFish.style.position = 'fixed'
         fallingFish.style.top = `${fishRect.top}px` // 使用视口绝对坐标
-        
+
         // 调整水平位置：增加向右的偏移量
         fallingFish.style.left = `${fishRect.left + 20}px` // 向右偏移20px
-        
+
         fallingFish.style.width = '40px'
         fallingFish.style.height = '40px'
         fallingFish.style.zIndex = '100'
-        
+
         // 获取任务容器和猫咪位置，确定下落终点
         const taskContainer = document.querySelector('.task-container')
         const containerRect = taskContainer.getBoundingClientRect()
         const catImg = document.querySelector('.cat-img')
-        const catRect = catImg ? catImg.getBoundingClientRect() : { 
+        const catRect = catImg ? catImg.getBoundingClientRect() : {
           bottom: containerRect.bottom,
           left: containerRect.left + containerRect.width / 2 // 如果没有猫咪，默认使用容器中心
         }
-        
+
         // 定义动画关键帧
         const keyframes = [
-        { transform: 'translateY(0)', opacity: 1 },
-        { 
-          transform: `translateY(${catRect.top - fishRect.top - 50}px) rotate(180deg)`, 
-          opacity: 0.5  // 下落过程中逐渐淡出到50%
-        },
-        { 
-          transform: `translateY(${catRect.bottom - fishRect.top - 20}px) translateX(${catRect.left + catRect.width/2 - fishRect.left}px) rotate(180deg)`, 
-          opacity: 0.5  // 保持50%透明度直到接近终点
-        },
-        { 
-          transform: `translateY(${catRect.bottom - fishRect.top}px) translateX(${catRect.left + catRect.width/2 - fishRect.left}px) rotate(180deg)`, 
-          opacity: 0  // 最后突然完全透明
-        }
+          { transform: 'translateY(0)', opacity: 1 },
+          {
+            transform: `translateY(${catRect.top - fishRect.top - 50}px) rotate(180deg)`,
+            opacity: 0.5  // 下落过程中逐渐淡出到50%
+          },
+          {
+            transform: `translateY(${catRect.bottom - fishRect.top - 20}px) translateX(${catRect.left + catRect.width/2 - fishRect.left}px) rotate(180deg)`,
+            opacity: 0.5  // 保持50%透明度直到接近终点
+          },
+          {
+            transform: `translateY(${catRect.bottom - fishRect.top}px) translateX(${catRect.left + catRect.width/2 - fishRect.left}px) rotate(180deg)`,
+            opacity: 0  // 最后突然完全透明
+          }
         ]
-        
+
         // 定义动画选项
         const options = {
           duration: 4000,
           easing: 'ease-out'
         }
-        
+
         // 执行动画
         const animation = fallingFish.animate(keyframes, options)
-        
+
         // 动画结束后移除克隆的小鱼
         animation.onfinish = () => {
           fallingFish.remove()
         }
-        
+
         // 将动画元素添加到页面
         document.body.appendChild(fallingFish)
       }
@@ -417,31 +436,50 @@ export default {
     }
 
     const sendMessage = () => {
-      if (userInput.value.trim() === '') return
+      if (userInput.value.trim() === '') return;
 
-      // 添加用户消息
+      const userMessage = userInput.value.trim();
+
+      // 添加用户消息到聊天记录
       chatMessages.value.push({
-        text: userInput.value,
+        text: userMessage,
         from: 'User',
-      })
-      userchat(userInput.value)
-      // 清空输入
-      userInput.value = ''
-      aianswer().then((response)=>{
-        chatMessages.value.push({
-          text: response.data,
-          from: 'AI',
-        })
-      })
-      // 模拟AI回复（实际应调用API）
-      // setTimeout(() => {
-      //   chatMessages.value.push({
-      //     text: '这是AI的回复：' + userInput.value.split('').reverse().join(''),
-      //     from: 'AI',
-      //   })
-      // }, 800)
+      });
 
-    }
+      // 清空输入框
+      userInput.value = '';
+
+      // 调用 AI 服务获取回复
+      aiService.chatWithAI(userMessage)
+        .then(response => {
+          let aiMessage = response.message;
+
+          // 如果是字符串，尝试解析为 JSON
+          if (typeof aiMessage === 'string') {
+            try {
+              const parsed = JSON.parse(aiMessage);
+              aiMessage = parsed.message || aiMessage; // 提取 message 字段
+            } catch (e) {
+              // 不是 JSON，保持原样
+            }
+          }
+
+          // 添加 AI 回复到聊天记录
+          chatMessages.value.push({
+            text: aiMessage,
+            from: 'AI'
+          });
+        })
+        .catch(error => {
+          console.error('AI 交互失败:', error);
+          chatMessages.value.push({
+            text: '抱歉，我暂时无法回答这个问题喵~',
+            from: 'AI'
+          });
+        });
+    };
+
+
 
     return {
       showRightSection,
